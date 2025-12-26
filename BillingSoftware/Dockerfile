@@ -1,5 +1,5 @@
-# Multi-stage build (Render ke liye perfect)
-FROM openjdk:17-jdk-slim AS builder
+# ✅ WORKING - Render approved images
+FROM eclipse-temurin:17-jdk-alpine AS builder
 WORKDIR /app
 COPY pom.xml .
 RUN ./mvnw dependency:go-offline -B
@@ -7,10 +7,11 @@ COPY src ./src
 RUN ./mvnw clean package -DskipTests
 
 # Production stage
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
 EXPOSE $PORT
-ENTRYPOINT ["sh", "-c", "java -jar /app/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
 
 
