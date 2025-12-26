@@ -1,16 +1,16 @@
-# Use official OpenJDK image
-FROM openjdk:17-jdk-slim
-
-# Set working directory
+# Multi-stage build (Render ke liye perfect)
+FROM openjdk:17-jdk-slim AS builder
 WORKDIR /app
+COPY pom.xml .
+RUN ./mvnw dependency:go-offline -B
+COPY src ./src
+RUN ./mvnw clean package -DskipTests
 
-# Copy the Spring Boot jar into the container
-COPY target/BillingSoftware-0.0.1-SNAPSHOT.jar app.jar
+# Production stage
+FROM openjdk:17-jre-slim
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
+EXPOSE $PORT
+ENTRYPOINT ["sh", "-c", "java -jar /app/app.jar"]
 
-# Expose port (same as Spring Boot default)
-EXPOSE 8080
-
-# Command to run the jar
-CMD ["java", "-jar", "app.jar"]
-]
 
